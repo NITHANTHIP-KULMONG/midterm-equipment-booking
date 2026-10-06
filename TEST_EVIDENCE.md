@@ -27,7 +27,7 @@
 ### Case 1 — POST `/bookings` → 201 Created
 
 ```text
-D:\code\midterm>curl.exe -i -X POST http://localhost:5173/bookings -H "Content-Type: application/json" -d "{\"equipmentId\":\"eq-1\",\"borrowerName\":\"Arthur Kulmong\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Exam Presentation\"}"
+D:\code\midterm>curl.exe -i -X POST https://midterm.6731503018.workers.dev/bookings -H "Content-Type: application/json" -d "{\"equipmentId\":\"eq-1\",\"borrowerName\":\"Arthur Kulmong\",\"startAt\":\"2026-10-20T09:00:00.000Z\",\"endAt\":\"2026-10-20T11:00:00.000Z\",\"purpose\":\"Exam Presentation\"}"
 HTTP/1.1 201 Created
 content-type: application/json; charset=UTF-8
 
@@ -41,7 +41,7 @@ content-type: application/json; charset=UTF-8
 ### Case 2 — POST `/bookings` (overlap) → 409 Conflict
 
 ```text
-D:\code\midterm>curl.exe -i -X POST http://localhost:5173/bookings -H "Content-Type: application/json" -d "{\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai\",\"startAt\":\"2026-10-20T10:00:00.000Z\",\"endAt\":\"2026-10-20T12:00:00.000Z\",\"purpose\":\"Overlapping booking\"}"
+D:\code\midterm>curl.exe -i -X POST https://midterm.6731503018.workers.dev/bookings -H "Content-Type: application/json" -d "{\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai\",\"startAt\":\"2026-10-20T10:00:00.000Z\",\"endAt\":\"2026-10-20T12:00:00.000Z\",\"purpose\":\"Overlapping booking\"}"
 HTTP/1.1 409 Conflict
 content-type: application/json; charset=UTF-8
 
@@ -55,7 +55,7 @@ content-type: application/json; charset=UTF-8
 ### Case 3 — POST `/bookings` (invalid time) → 400 Bad Request
 
 ```text
-D:\code\midterm>curl.exe -i -X POST http://localhost:5173/bookings -H "Content-Type: application/json" -d "{\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai\",\"startAt\":\"2026-10-20T15:00:00.000Z\",\"endAt\":\"2026-10-20T13:00:00.000Z\",\"purpose\":\"Invalid time\"}"
+D:\code\midterm>curl.exe -i -X POST https://midterm.6731503018.workers.dev/bookings -H "Content-Type: application/json" -d "{\"equipmentId\":\"eq-1\",\"borrowerName\":\"Somchai\",\"startAt\":\"2026-10-20T15:00:00.000Z\",\"endAt\":\"2026-10-20T13:00:00.000Z\",\"purpose\":\"Invalid time\"}"
 HTTP/1.1 400 Bad Request
 content-type: application/json; charset=UTF-8
 
@@ -69,7 +69,7 @@ content-type: application/json; charset=UTF-8
 ### Case 4 — GET `/bookings/:id` (not found) → 404 Not Found
 
 ```text
-D:\code\midterm>curl.exe -i http://localhost:5173/bookings/bk-not-exist-999
+D:\code\midterm>curl.exe -i https://midterm.6731503018.workers.dev/bookings/bk-not-exist-999
 HTTP/1.1 404 Not Found
 content-type: application/json; charset=UTF-8
 
@@ -83,7 +83,7 @@ content-type: application/json; charset=UTF-8
 ### Case 5 — GET `/bookings` → 200 OK
 
 ```text
-D:\code\midterm>curl.exe -i http://localhost:5173/bookings
+D:\code\midterm>curl.exe -i https://midterm.6731503018.workers.dev/bookings
 HTTP/1.1 200 OK
 content-type: application/json; charset=UTF-8
 
@@ -97,7 +97,7 @@ content-type: application/json; charset=UTF-8
 ### Case 6 — DELETE `/bookings/:id` → 204 No Content
 
 ```text
-D:\code\midterm>curl.exe -i -X DELETE http://localhost:5173/bookings/bk-900fd47e
+D:\code\midterm>curl.exe -i -X DELETE https://midterm.6731503018.workers.dev/bookings/bk-900fd47e
 HTTP/1.1 204 No Content
 ```
 
