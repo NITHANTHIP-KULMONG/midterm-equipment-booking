@@ -1,7 +1,6 @@
 # Test Evidence & Verification Log
 
 **Live API Base URL:** `https://midterm.6731503018.workers.dev`
-**Local Base URL:** `http://localhost:5173`
 **Environment:** Cloudflare Workers + Remote D1 SQLite
 **Test Date:** 2026-10-06
 **Shell:** Windows `cmd.exe` (to avoid PowerShell JSON quoting issues)
