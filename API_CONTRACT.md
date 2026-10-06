@@ -1,6 +1,7 @@
 # Campus Equipment Booking API — Full Contract & Data Design
 
-**Base URL:** `http://localhost:5173` (supports both root `/` and `/api/` prefixes)
+**Base URL (Live Cloudflare Workers):** `https://midterm.6731503018.workers.dev`
+**Local Dev URL:** `http://localhost:5173`
 
 ---
 

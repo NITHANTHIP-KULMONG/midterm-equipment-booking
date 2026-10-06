@@ -1,5 +1,9 @@
 # Campus Equipment Booking API (Midterm Exam)
 
+## Live Deployment (Cloudflare Workers)
+- **Live API Base URL:** `https://midterm.6731503018.workers.dev`
+- **Database:** Cloudflare D1 (Remote `taskflow-db`)
+
 REST API for reserving campus equipment (projectors, cameras, meeting rooms) with **time-overlap conflict prevention**, built on Cloudflare Workers + Hono + D1.
 
 ---
