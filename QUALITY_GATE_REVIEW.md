@@ -1,0 +1,14 @@
+# Quality Gate Review
+
+**Pre-30 Minute Checkpoint Commit:** `3429517` (`checkpoint: v1 implementation of equipment and bookings API`)
+**Review Status:** ✅ READY
+
+---
+
+## Review Record
+
+| Quality Gate Area | Finding | Action Taken | Evidence |
+|---|---|---|---|
+| **Reliability** | Initial draft lacked `FOREIGN KEY` constraint on `bookings.equipment_id`, allowing orphan bookings to be inserted against non-existent equipment IDs. | Added explicit `FOREIGN KEY (equipment_id) REFERENCES equipment(id)` in the DDL (`migrations/0001_init.sql`). POST and PATCH handlers also perform a pre-insert lookup (`SELECT id FROM equipment WHERE id = ?`) to return a clear `404` before the FK constraint fires. | `migrations/0001_init.sql` line 18: `FOREIGN KEY (equipment_id) REFERENCES equipment(id)`. POST to `/bookings` with `equipmentId: "eq-99"` returns `404 {"error": "Equipment with ID \"eq-99\" not found"}`. |
+| **Accuracy** | Time-overlap comparison used raw string comparison (`start_at < ?`) instead of SQLite's `datetime()` function, which could produce incorrect results for certain ISO-8601 formats with timezone offsets or missing T separators. Error envelope used nested format `{ success, error: { message } }` instead of the exam-required single-key `{ "error": "message" }`. | Rewrote overlap query to use `datetime(start_at) < datetime(?) AND datetime(end_at) > datetime(?)` with parameterized `.bind()`. Refactored all error responses through a unified `sendErr()` helper that returns `{ "error": message }`. | Overlap query in `src/worker/index.ts` lines 38-43. POST overlapping booking returns `409 {"error": "Booking time conflicts with an existing booking for this equipment"}`. POST with missing fields returns `400 {"error": "Missing required fields: ..."}`. All error payloads verified to contain exactly one key: `"error"`. |
+| **Reasoning / You Own It** | Full-stack clients might query either `/bookings` or `/api/bookings` depending on proxy configuration. Windows PowerShell testing mangled nested JSON double-quotes in curl payloads, causing false `400 Invalid JSON body` errors that initially appeared to be API bugs. | Mounted the Hono router at both `/` and `/api` prefixes (`app.route('/api', api)` and `app.route('/', api)`). Switched manual curl testing to native `cmd.exe` with proper backslash-escaped JSON to eliminate shell quoting issues. Documented the correct curl syntax in TEST_EVIDENCE.md. | `src/worker/index.ts` lines 189-190 dual route mounting. All 6 curl tests pass via `cmd.exe` — see TEST_EVIDENCE.md raw terminal output showing `201 Created`, `409 Conflict`, `400 Bad Request`, `404 Not Found`, `200 OK`, and `204 No Content`. |

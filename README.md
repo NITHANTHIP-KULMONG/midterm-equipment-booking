@@ -1,90 +1,134 @@
-# React + Vite + Hono + Cloudflare Workers
+# Campus Equipment Booking API (Midterm Exam)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+REST API for reserving campus equipment (projectors, cameras, meeting rooms) with **time-overlap conflict prevention**, built on Cloudflare Workers + Hono + D1.
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
+---
 
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
+## Tech Stack
 
-<!-- dash-content-start -->
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Cloudflare Workers |
+| Framework | Hono |
+| Database | Cloudflare D1 (SQLite) |
+| Frontend | React + Vite (optional, SPA shell) |
+| Language | TypeScript |
 
-🚀 Supercharge your web development with this powerful stack:
+---
 
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
+## Prerequisites
 
-### ✨ Key Features
+- **Node.js** ≥ 18
+- **npm** ≥ 9
+- **Wrangler** (installed as a dev dependency)
 
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
+---
 
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
+## How to Run Locally
 
-<!-- dash-content-end -->
-
-## Getting Started
-
-To start a new project with this template, run:
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
-```
-
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
-
-## Development
-
-Install dependencies:
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-Start the development server with:
+### 2. Initialize the D1 Database (apply migrations)
+
+```bash
+npx wrangler d1 execute taskflow-db --local --file=./migrations/0001_init.sql
+```
+
+This creates the `equipment` and `bookings` tables and seeds 3 equipment items.
+
+### 3. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+The API will be available at **http://localhost:5173**.
 
-## Production
-
-Build your project for production:
+### 4. Verify It Works
 
 ```bash
-npm run build
+curl http://localhost:5173/equipment
 ```
 
-Preview your build locally:
-
-```bash
-npm run preview
+Expected response:
+```json
+[
+  {"id":"eq-1","name":"Projector A","location":"Building 1"},
+  {"id":"eq-2","name":"Sony 4K Camera","location":"Media Lab B"},
+  {"id":"eq-3","name":"Meeting Room 301","location":"Floor 3"}
+]
 ```
 
-Deploy your project to Cloudflare Workers:
+---
 
-```bash
-npm run build && npm run deploy
+## API Endpoints
+
+| Method | Path | Description | Status Codes |
+|--------|------|-------------|-------------|
+| GET    | `/equipment`      | List all equipment       | 200 |
+| GET    | `/bookings`       | List all bookings        | 200 |
+| GET    | `/bookings/:id`   | Get a single booking     | 200, 404 |
+| POST   | `/bookings`       | Create a new booking     | 201, 400, 404, 409 |
+| PATCH  | `/bookings/:id`   | Update a booking         | 200, 400, 404, 409 |
+| DELETE | `/bookings/:id`   | Delete a booking         | 204, 404 |
+
+> All endpoints are available with both `/` and `/api/` prefixes (e.g., `/bookings` and `/api/bookings`).
+
+### Error Format
+
+All errors return a single-key JSON envelope:
+
+```json
+{ "error": "<message>" }
 ```
 
-Monitor your workers:
+---
 
-```bash
-npx wrangler tail
+## Project Structure
+
+```
+midterm/
+├── migrations/
+│   └── 0001_init.sql          # DDL + seed data
+├── src/
+│   ├── worker/
+│   │   └── index.ts           # Hono API routes (main entry point)
+│   └── react-app/             # React frontend (SPA shell)
+├── API_CONTRACT.md            # Full API contract & ERD
+├── QUALITY_GATE_REVIEW.md     # Quality gate review record
+├── AI_LOG.md                  # AI transparency audit log
+├── TEST_EVIDENCE.md           # Test cases & raw curl output
+├── README.md                  # This file
+├── wrangler.json              # Wrangler / D1 configuration
+└── package.json
 ```
 
-## Additional Resources
+---
 
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+## Key Implementation Details
+
+1. **Overlap Detection** uses SQLite's `datetime()` function:
+   ```sql
+   WHERE equipment_id = ?
+     AND datetime(start_at) < datetime(?)
+     AND datetime(end_at)   > datetime(?)
+   ```
+2. **Parameter Binding** — All SQL queries use `.bind()` to prevent injection.
+3. **CORS** — Enabled for all origins via Hono middleware.
+4. **ID Generation** — Booking IDs use `bk-` prefix + truncated UUID.
+
+---
+
+## Deliverable Documents
+
+| File | Purpose |
+|------|---------|
+| `API_CONTRACT.md` | Full API contract, DDL schema, and ERD |
+| `QUALITY_GATE_REVIEW.md` | Quality gate review (Reliability, Accuracy, Reasoning) |
+| `AI_LOG.md` | AI transparency audit log (3 prompts + validations) |
+| `TEST_EVIDENCE.md` | Test evidence table + raw curl outputs (6 cases) |
+| `README.md` | This runnable project guide |
